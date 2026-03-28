@@ -82,8 +82,8 @@
 
   - Create and activate a fresh environment:
     ```bash
-    conda create -n interact python=3.8
-    conda activate interact
+    conda create -n light python=3.10
+    conda activate light
     pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118
     ```
 

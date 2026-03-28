@@ -7,8 +7,6 @@
 <sup>1</sup>University of Illinois Urbana-Champaign<br>
 <sup>2</sup>Snap Inc.<br>
 
-<sup>*</sup>Equal contribution
-
 **ICLR 2026**
 
 </div>
@@ -36,6 +34,8 @@
 
 
 ## TODO
+- [ ] Release the data processing code
+- [ ] Release the checkpoints on all datasets
 - [ ] Release the evaluation pipeline
 - [ ] Release the training pipeline
 - [ ] Release the augmentated data

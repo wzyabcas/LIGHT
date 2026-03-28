@@ -56,7 +56,6 @@
      Download SMPL+H mode from [SMPL+H](https://mano.is.tue.mpg.de/download.php) (choose Extended SMPL+H model used in the AMASS project), DMPL model from [DMPL](https://smpl.is.tue.mpg.de/download.php) (choose DMPLs compatible with SMPL), and SMPL-X model from [SMPL-X](https://smpl-x.is.tue.mpg.de/download.php). Then, please place all the models under `./models/`. The `./models/` folder tree should be: 
 
      ````
-     ```
      models
      │── smplh
      │   ├── female
@@ -75,9 +74,8 @@
          ├── SMPLX_MALE.pkl
          ├── SMPLX_NEUTRAL.npz
          └── SMPLX_NEUTRAL.pkl
-     ```
      ````
-
+     
      Please follow [smplx tools](https://github.com/vchoutas/smplx/blob/main/tools/README.md#merging-smpl-h-and-mano-parameters) to merge SMPL-H and MANO parameters.
 
 2. Prepare Environment

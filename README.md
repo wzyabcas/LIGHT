@@ -2,7 +2,7 @@
 
 # **Unleashing Guidance Without Classifiers for Human-Object Interaction Animation**
 
-[Ziyin Wang](https://github.com/wzyabcas/LIGHT)<sup>1</sup>&emsp; [Sirui Xu](https://sirui-xu.github.io)<sup>1</sup>&emsp; [Chuan Guo](https://ericguo5513.github.io/)<sup>2</sup>&emsp; [Bing Zhou](https://zhoubinwy.github.io/)<sup>2</sup>&emsp; [Jiangshan Gong](https://github.com/gong208)<sup>1</sup>&emsp; [Jian Wang](https://jianwang-cmu.github.io/)<sup>2</sup>&emsp; [Yu-Xiong Wang](https://yxw.cs.illinois.edu/)<sup>1</sup>&emsp; [Liang-Yan Gui](https://lgui.web.illinois.edu/)<sup>1</sup>
+[Ziyin Wang](https://github.com/wzyabcas)<sup>1</sup>&emsp; [Sirui Xu](https://sirui-xu.github.io)<sup>1</sup>&emsp; [Chuan Guo](https://ericguo5513.github.io/)<sup>2</sup>&emsp; [Bing Zhou](https://zhoubinwy.github.io/)<sup>2</sup>&emsp; [Jiangshan Gong](https://github.com/gong208)<sup>1</sup>&emsp; [Jian Wang](https://jianwang-cmu.github.io/)<sup>2</sup>&emsp; [Yu-Xiong Wang](https://yxw.cs.illinois.edu/)<sup>1</sup>&emsp; [Liang-Yan Gui](https://lgui.web.illinois.edu/)<sup>1</sup>
 
 <sup>1</sup>University of Illinois Urbana-Champaign<br>
 <sup>2</sup>Snap Inc.<br>
@@ -29,8 +29,8 @@
 ![](./assets/teaser.png)
 
 ## News
-- [2026-03-26] Initial release of LIGHT.
-- [2026-03-26] Release the inference pipeline.
+- [2026-03-27] Initial release of LIGHT.
+- [2026-03-27] Release the inference pipeline.
 
 
 
@@ -50,32 +50,35 @@
 
 <details>
   <summary>Please follow these steps to get started</summary>
-1. Download SMPL+H and SMPL-X.
 
-    Download SMPL+H mode from [SMPL+H](https://mano.is.tue.mpg.de/download.php) (choose Extended SMPL+H model used in the AMASS project), DMPL model from [DMPL](https://smpl.is.tue.mpg.de/download.php) (choose DMPLs compatible with SMPL), and SMPL-X model from [SMPL-X](https://smpl-x.is.tue.mpg.de/download.php). Then, please place all the models under `./models/`. The `./models/` folder tree should be:
+  1. Download SMPL+H and SMPL-X. 
 
-    ```
-    models
-    │── smplh
-    │   ├── female
-    │   │   ├── model.npz
-    │   ├── male
-    │   │   ├── model.npz
-    │   ├── neutral
-    │   │   ├── model.npz
-    │   ├── SMPLH_FEMALE.pkl
-    │   ├── SMPLH_MALE.pkl
-    │   └── SMPLH_NEUTRAL.pkl    
-    └── smplx
-        ├── SMPLX_FEMALE.npz
-        ├── SMPLX_FEMALE.pkl
-        ├── SMPLX_MALE.npz
-        ├── SMPLX_MALE.pkl
-        ├── SMPLX_NEUTRAL.npz
-        └── SMPLX_NEUTRAL.pkl
-    ```
+     Download SMPL+H mode from [SMPL+H](https://mano.is.tue.mpg.de/download.php) (choose Extended SMPL+H model used in the AMASS project), DMPL model from [DMPL](https://smpl.is.tue.mpg.de/download.php) (choose DMPLs compatible with SMPL), and SMPL-X model from [SMPL-X](https://smpl-x.is.tue.mpg.de/download.php). Then, please place all the models under `./models/`. The `./models/` folder tree should be: 
 
-    Please follow [smplx tools](https://github.com/vchoutas/smplx/blob/main/tools/README.md#merging-smpl-h-and-mano-parameters) to merge SMPL-H and MANO parameters.
+     ````
+     ```
+     models
+     │── smplh
+     │   ├── female
+     │   │   ├── model.npz
+     │   ├── male
+     │   │   ├── model.npz
+     │   ├── neutral
+     │   │   ├── model.npz
+     │   ├── SMPLH_FEMALE.pkl
+     │   ├── SMPLH_MALE.pkl
+     │   └── SMPLH_NEUTRAL.pkl    
+     └── smplx
+         ├── SMPLX_FEMALE.npz
+         ├── SMPLX_FEMALE.pkl
+         ├── SMPLX_MALE.npz
+         ├── SMPLX_MALE.pkl
+         ├── SMPLX_NEUTRAL.npz
+         └── SMPLX_NEUTRAL.pkl
+     ```
+     ````
+
+     Please follow [smplx tools](https://github.com/vchoutas/smplx/blob/main/tools/README.md#merging-smpl-h-and-mano-parameters) to merge SMPL-H and MANO parameters.
 
 2. Prepare Environment
 
@@ -97,74 +100,42 @@
 
   - **OMOMO**
 
-    Download the dataset from this [link](https://github.com/lijiaman/omomo_release)
+    Download the processed dataset from this [link](https://drive.google.com/file/d/1-A2NuyyRydUkwAm-rDTHhBHnV8YnJ4uO/view?usp=sharing)
 
     Expected File Structure:
     ```bash
-    InterAct/omomo/sequences_canonical
+    InterAct/omomo
     ├── objects
     │   └── object_name
     │       └── object_name.obj
-    └── sequences
+    └── sequences_canonical
     	└── id
     		├── data.npz
     ```
+4. Download pretrained checkpoints
+
+
+  Download the pretrained checkpoints from this [link](https://drive.google.com/file/d/142UBxI1XyGVeopk0_azD_B_FDE_HPS8J/view?usp=sharing), and put in `./save/`. 
+
+
 </details>
 
 ## Inference
 
-<details>
-   <summary>Prepare</summary>
 
-  Download pretrained model and evaluator models:
+To inference with trained models, execute the following steps
 
-  -  Download the checkpoints of the pretrained evaluator and text encoder used in training from this [link](https://drive.google.com/file/d/1-bpafRyaVHdX4TsltDHiGIxcjw-k1Fnf/view?usp=sharing), and put in `./text2interaction/assets/eval`.
-
-  -  Optional: Download the pretrained model checkpoints from this [link](https://drive.google.com/file/d/1vfskohWxr7gBuve1MLD1RlGut_xSN8mL/view?usp=sharing), and put in `./text2interaction/save/`.
-
-  </details>
-
-  <details>
-  <summary>Evaluation</summary>
-
-  To evaluate on our benchmark, execute the following steps
-
-  - Evaluate on the marker representation:
+  - Generate without guidance:
 
     ```
-    cd text2interaction
-    bash ./scripts/eval.sh
+    bash ./scripts/generate.sh
     ```
-  - Evaluate on the marker representation with contact guidance used:
+  - Generate with our guidance:
 
     ```
-    cd text2interaction
-    bash ./scripts/eval_wguide.sh
+    bash ./scripts/generate_guide.sh
     ```
     </details>
-
-    
-
-
-## Visualization
-
-To visualize the dataset, execute the following steps:
-
-1. Run the visualization script:
-
-    ```bash
-    python visualization/visualize.py [dataset_name]
-    ```
-
-    Replace [dataset_name] with one of the following: behave, neuraldome, intercap, omomo, grab, imhd, chairs.
-
-2. To visualize markers, run:
-
-    ```bash
-    python visualization/visualize_markers.py
-    ```
-
-
 
 ## Citation  
 

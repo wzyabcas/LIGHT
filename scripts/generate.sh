@@ -1,0 +1,1 @@
+python -m sample.generate --model_path save/omomo_pretrained/model.pt --num_repetitions 1 --batch_size 64 

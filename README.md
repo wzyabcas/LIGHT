@@ -14,7 +14,7 @@
 </p>
 <p align="center">
   <a href='https://arxiv.org/pdf/2603.25734'>
-    <img src='https://img.shields.io/badge/Arxiv-2509.09555-A42C25?style=flat&logo=arXiv&logoColor=A42C25'></a>
+    <img src='https://img.shields.io/badge/Arxiv-2603.25734-A42C25?style=flat&logo=arXiv&logoColor=A42C25'></a>
   <!-- <a href='https://arxiv.org/pdf/xxxx.xxxxx.pdf'>
     <img src='https://img.shields.io/badge/Paper-PDF-yellow?style=flat&logo=arXiv&logoColor=yellow'></a> -->
 <a href='https://ziyinwang1.github.io/LIGHT/'>

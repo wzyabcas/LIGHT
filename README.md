@@ -113,7 +113,7 @@
 4. Download pretrained checkpoints
 
 
-  Download the pretrained checkpoints from this [link](https://drive.google.com/file/d/142UBxI1XyGVeopk0_azD_B_FDE_HPS8J/view?usp=sharing), and put in `./save/`. 
+    Download the pretrained checkpoints from this [link](https://drive.google.com/file/d/142UBxI1XyGVeopk0_azD_B_FDE_HPS8J/view?usp=sharing), and put in `./save/`. 
 
 
 </details>

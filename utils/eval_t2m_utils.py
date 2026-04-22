@@ -11,6 +11,7 @@ import os
 import numpy as np
 from pytorch3d.ops import cot_laplacian
 from pytorch3d.structures import Meshes
+import shutil
 # from human_body_prior.tools import tgm_conversion as tgm
 import chamfer_distance as chd
 def calculate_mpjpe(gt_joints, pred_joints):
@@ -452,14 +453,15 @@ def load_object_sdf_data( dataset_name, obj_name,version):
     #     sdf_json_path = os.path.join(data_folder, object_name+".json")
     # else:
     object_name = obj_name
-    # base = '/projects/bbsg/ziyin/data'
-    base = '/work/hdd/bcnt/ziyin/data'
-    data_folder = os.path.join(base,dataset_name, 'object_sdf') 
+    
     if version  ==9:
         sdf_npy_path = os.path.join(data_folder, object_name+"_can.npy")
         sdf_json_path = os.path.join(data_folder, object_name+"_can.json")
     else:
-        sdf_npz_path = os.path.join(data_folder, object_name+".npz")
+        # sdf_npz_path = os.path.join(data_folder, object_name+".npz")
+        dataset_name = dataset_name.split('_')[0]
+        sdf_npz_path = f'./InterAct/{dataset_name}/objects/{object_name}/{object_name}'+'_sdf.npz'
+        
         # sdf_json_path = os.path.join(data_folder, object_name+".json")
     data = np.load(sdf_npz_path,allow_pickle=True)
     sdf = data['sdf']

@@ -46,19 +46,20 @@ class Text2MotionDatasetV3(data.Dataset):
 
         data_dict = {}
         id_list = []
+        self.motion_dir = motion_dir
         if split == 'train':
             if not self.obj_split:
-                split_file = os.path.join(self.motion_dir,'/stats/test_seq.txt')              
+                split_file = os.path.join(self.motion_dir,'stats/test_seq.txt')              
             else:
-                split_file = os.path.join(self.motion_dir,'/stats/test_obj.txt')
+                split_file = os.path.join(self.motion_dir,'stats/test_obj.txt')
         else:
             if not self.obj_split:
-                split_file = os.path.join(self.motion_dir,'/stats/test_seq_orig.txt')  # different, because some low-quality sequences with wrist flip artifacts are filtered out in training
+                split_file = os.path.join(self.motion_dir,'stats/test_seq_orig.txt')  # different, because some low-quality sequences with wrist flip artifacts are filtered out in training
             else:
-                split_file = os.path.join(self.motion_dir,'/stats/test_obj_orig.txt' )
+                split_file = os.path.join(self.motion_dir,'stats/test_obj_orig.txt' )
         if dataset =='interact_behave_omomo':
-            split_file=os.path.join(self.motion_dir,'/stats/test_aug_cross.txt')
-                
+            split_file=os.path.join(self.motion_dir,'stats/test_aug_cross.txt')
+        print(split_file)    
         with cs.open(split_file, 'r') as f:
             for line in f.readlines():
                 id_list.append(line.strip())
@@ -92,8 +93,8 @@ class Text2MotionDatasetV3(data.Dataset):
         
         new_name_list = []
         length_list = []
-        self.mean = np.load(os.path.join(self.motion_dir,'/stats/{dataset}_mean.npy'))
-        self.std = np.load(os.path.join(self.motion_dir,'/stats/{dataset}_std.npy'))
+        self.mean = np.load(os.path.join(self.motion_dir,f'stats/{dataset}_mean.npy'))
+        self.std = np.load(os.path.join(self.motion_dir,f'stats/{dataset}_std.npy'))
         
         self.mean_rt = self.mean[-9:]
         self.std_rt = self.std[-9:]

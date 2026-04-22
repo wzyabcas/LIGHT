@@ -29,12 +29,17 @@ declare -A MODEL_PATH=(
     [interact]="save/interact_pretrained/model000248000.pt"
 )
 
+declare -A DATASET_NAME=(
+    [omomo]="omomo_correct"
+    [behave]="behave_correct"
+    [interact]="interact_correct"
+)
+
 [[ -z "${MODEL_PATH[$DATASET]}" ]] && { echo "Error: unknown dataset '$DATASET'"; exit 1; }
 
-FULL_CMD="python -m sample.generate"
+FULL_CMD="CUDA_VISIBLE_DEVICES=0 accelerate launch --num_processes 1 --mixed_precision fp16 eval/eval_t2hoi.py"
 FULL_CMD+=" --model_path ${MODEL_PATH[$DATASET]}"
-FULL_CMD+=" --num_repetitions 1"
-FULL_CMD+=" --batch_size 64"
+FULL_CMD+=" --dataset ${DATASET_NAME[$DATASET]}"
 
 echo "Running: $FULL_CMD"
 echo "---"

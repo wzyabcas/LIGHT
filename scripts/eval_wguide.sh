@@ -1,14 +1,14 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: $0 --dataset <omomo|behave|interact> --mode <0-5> [extra args...]"
+    echo "Usage: $0 --dataset <omomo|behave|interact> --mode <0-5>"
     echo ""
     echo "Options:"
     echo "  --dataset, -d    Dataset name: omomo, behave, interact"
     echo "  --mode, -m       Mode number: 0, 1, 2, 3, 4, 5"
     echo ""
     echo "Example:"
-    echo "  $0 --dataset omomo --mode 2"
+    echo "  $0 --dataset interact --mode 2"
     exit 1
 }
 
@@ -34,14 +34,17 @@ declare -A MODEL_PATH=(
     [interact]="save/interact_pretrained/model000248000.pt"
 )
 
-[[ -z "${MODEL_PATH[$DATASET]}" ]] && { echo "Error: unknown dataset '$DATASET'"; exit 1; }
+# --- Dataset names for --dataset flag ---
+declare -A DATASET_NAME=(
+    [omomo]="omomo_correct"
+    [behave]="behave_correct"
+    [interact]="interact_correct"
+)
 
-BASE_CMD="python -m sample.generate_guide --model_path ${MODEL_PATH[$DATASET]} --num_repetitions 1 --batch_size 64"
+[[ -z "${MODEL_PATH[$DATASET]}" ]] && { echo "Error: unknown dataset '$DATASET'"; exit 1; }
 
 # --- Per-dataset, per-mode parameters ---
 # Format: "df_delta df_weight df_divider df_upstop"
-# (remaining params are constant per dataset or globally shared)
-
 declare -A PARAMS
 
 # omomo
@@ -71,7 +74,11 @@ PARAMS[interact,5]="350 5.0 1 470"
 P="${PARAMS[$DATASET,$MODE]}"
 read -r DF_DELTA DF_WEIGHT DF_DIVIDER DF_UPSTOP <<< "$P"
 
-FULL_CMD="$BASE_CMD"
+export PYTHONPATH="$(pwd):$PYTHONPATH"
+
+FULL_CMD="CUDA_VISIBLE_DEVICES=0 accelerate launch --num_processes 1 --mixed_precision fp16 eval/eval_t2hoi_wguide.py"
+FULL_CMD+=" --model_path ${MODEL_PATH[$DATASET]}"
+FULL_CMD+=" --dataset ${DATASET_NAME[$DATASET]}"
 FULL_CMD+=" --df_delta $DF_DELTA"
 FULL_CMD+=" --df_weight $DF_WEIGHT"
 FULL_CMD+=" --df_divider $DF_DIVIDER"

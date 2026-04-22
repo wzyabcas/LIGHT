@@ -29,8 +29,10 @@
 ## News
 - [2026-03-27] Initial release of LIGHT.
 - [2026-03-27] Release the inference pipeline.
-- [2026-03-27] Release the training pipeline.
-- [2026-03-27] Release the evaluation pipeline.
+- [2026-04-22] Release the training pipeline.
+- [2026-04-22] Release the evaluation pipeline.
+- [2026-04-22] Release the evaluator and pretrained model checkpoints
+
 
 
 
@@ -39,7 +41,7 @@
 - [X] Release the checkpoints on all datasets
 - [X] Release the evaluation pipeline
 - [X] Release the training pipeline
-- [ ] Release the data processing code
+- [ ] Release the data processing code for GRAB and BEHAVE
 - [ ] Release the augmentated data
 
 
@@ -98,8 +100,6 @@
 
 3. Prepare data
 
-  
-
     Download the processed dataset from this [link](https://drive.google.com/file/d/1-A2NuyyRydUkwAm-rDTHhBHnV8YnJ4uO/view?usp=sharing)
 
     Expected File Structure:
@@ -133,14 +133,25 @@ To inference with trained models, execute the following steps
   - Generate without guidance:
 
     ```
-    bash ./scripts/generate.sh
+    bash ./scripts/generate.sh --dataset DATASET
     ```
   - Generate with our guidance:
 
     ```
-    bash ./scripts/generate_guide.sh
+    bash ./scripts/generate_guide.sh --dataset DATASET --mode GUIDANCE_MODE
     ```
+
     </details>
+  `DATASET` is from `[omomo, behave, interact]`. `GUIDANCE_MODE` ranges from 0 to 5, corresponding to the following `(m<sub>2</sub>, m<sub>2</sub>)` combinations in the paper:
+
+  | GUIDANCE_MODE | m<sub>1</sub>  | m<sub>2</sub>  |
+  |---------------|-----|-----|
+  | 0             | o, h | b   |
+  | 1             | b, h | o   |
+  | 2             | b, o | h   |
+  | 3             | b   | o, h |
+  | 4             | o   | b, h |
+  | 5             | h   | b, o |
 
 ## Evaluation
 
@@ -150,14 +161,25 @@ To evaluate with trained models, execute the following steps
   - Evaluate without guidance:
 
     ```
-    bash ./scripts/generate.sh
+    bash ./scripts/eval.sh --dataset DATASET
     ```
+
   - Evaluate with our guidance:
 
     ```
-    bash ./scripts/generate_guide.sh
+    bash ./scripts/eval_guide.sh --dataset DATASET --mode GUIDANCE_MODE
     ```
     </details>
+  `DATASET` is from `[omomo, behave, interact]`. `GUIDANCE_MODE` ranges from 0 to 5, corresponding to the following `(m<sub>2</sub>, m<sub>2</sub>)` combinations in the paper:
+
+  | GUIDANCE_MODE | m<sub>1</sub>  | m<sub>2</sub>  |
+  |---------------|-----|-----|
+  | 0             | o, h | b   |
+  | 1             | b, h | o   |
+  | 2             | b, o | h   |
+  | 3             | b   | o, h |
+  | 4             | o   | b, h |
+  | 5             | h   | b, o |
 
 
 ## Training
@@ -165,13 +187,10 @@ To evaluate with trained models, execute the following steps
 
 To train the model, execute the following steps
 
-  - Generate without guidance:
-
-    ```
-    bash ./scripts/generate.sh
-    ```
-  
-    </details>
+```
+bash ./scripts/train.sh --dataset DATASET
+```
+`DATASET` is from `[omomo, imhd, neuraldome, chairs]`. Training on BEHAVE, GRAB and InterAct datasets will be supported soon.
 
 ## Citation  
 

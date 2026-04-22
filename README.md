@@ -29,15 +29,17 @@
 ## News
 - [2026-03-27] Initial release of LIGHT.
 - [2026-03-27] Release the inference pipeline.
+- [2026-03-27] Release the training pipeline.
+- [2026-03-27] Release the evaluation pipeline.
 
 
 
 
 ## TODO
+- [X] Release the checkpoints on all datasets
+- [X] Release the evaluation pipeline
+- [X] Release the training pipeline
 - [ ] Release the data processing code
-- [ ] Release the checkpoints on all datasets
-- [ ] Release the evaluation pipeline
-- [ ] Release the training pipeline
 - [ ] Release the augmentated data
 
 
@@ -96,24 +98,29 @@
 
 3. Prepare data
 
-  - **OMOMO**
+  
 
     Download the processed dataset from this [link](https://drive.google.com/file/d/1-A2NuyyRydUkwAm-rDTHhBHnV8YnJ4uO/view?usp=sharing)
 
     Expected File Structure:
     ```bash
-    InterAct/omomo
+    InterAct/dataset_name
     ├── objects
     │   └── object_name
     │       └── object_name.obj
     └── sequences_canonical
-    	└── id
-    		├── data.npz
+      └── id
+        ├── data.npz
     ```
 4. Download pretrained checkpoints
 
 
     Download the pretrained checkpoints from this [link](https://drive.google.com/file/d/142UBxI1XyGVeopk0_azD_B_FDE_HPS8J/view?usp=sharing), and put in `./save/`. 
+
+5. Download evaluator checkpoint
+
+
+    Download the evaluator checkpoints from this [link](https://drive.google.com/file/d/1vajAJV6ma9elAl2802coX62-k2wnTLjZ/view?usp=sharing), and put in `./assets/evaluator.ckpt`.
 
 
 </details>
@@ -133,6 +140,37 @@ To inference with trained models, execute the following steps
     ```
     bash ./scripts/generate_guide.sh
     ```
+    </details>
+
+## Evaluation
+
+
+To evaluate with trained models, execute the following steps
+
+  - Evaluate without guidance:
+
+    ```
+    bash ./scripts/generate.sh
+    ```
+  - Evaluate with our guidance:
+
+    ```
+    bash ./scripts/generate_guide.sh
+    ```
+    </details>
+
+
+## Training
+
+
+To train the model, execute the following steps
+
+  - Generate without guidance:
+
+    ```
+    bash ./scripts/generate.sh
+    ```
+  
     </details>
 
 ## Citation  

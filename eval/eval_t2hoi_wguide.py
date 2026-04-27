@@ -396,7 +396,7 @@ if __name__ == '__main__':
     ##
     
     # datasets=['omomo_correct','grab','chairs','imhd','neuraldome','intercap_correct','behave_correct'][:]
-    datasets=['omomo','grab','chairs','imhd','neuraldome','intercap','behave'][:]
+    datasets=['omomo','grab','chairs','imhd','neuraldome','behave'][:]
     # datasets =['neuraldome','intercap_correct','behave_correct']
     # datasets =['behave_correct']
     

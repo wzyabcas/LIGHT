@@ -66,7 +66,7 @@ class Text2MotionDatasetV3(data.Dataset):
         
         if dataset == 'interact':
             
-            datasets = ['behave', 'intercap', 'neuraldome', 'chairs', 'omomo', 'imhd', 'grab']
+            datasets = ['behave', 'neuraldome', 'chairs', 'omomo', 'imhd', 'grab']
             # self.datasets = ['neuraldome', 'chairs', 'imhd', 'grab']
         elif dataset == 'interact_high':
             datasets = ['neuraldome', 'chairs', 'imhd', 'grab']
@@ -76,9 +76,9 @@ class Text2MotionDatasetV3(data.Dataset):
         elif dataset == 'interact_wobehave':
             datasets = [ 'neuraldome', 'chairs', 'omomo', 'imhd', 'grab']
         elif dataset == 'interact':
-            datasets = [ 'neuraldome', 'chairs', 'omomo', 'imhd', 'grab','behave','intercap']
+            datasets = [ 'neuraldome', 'chairs', 'omomo', 'imhd', 'grab','behave']
         elif dataset == 'interact_woomomo':
-            datasets = [ 'neuraldome', 'chairs', 'imhd', 'grab','behave','intercap']
+            datasets = [ 'neuraldome', 'chairs', 'imhd', 'grab','behave']
         elif dataset == 'interact_behave_omomo':
             datasets = [ 'behave', 'omomo','imhd']
         else:

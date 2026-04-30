@@ -35,6 +35,7 @@ FULL_CMD="python -m sample.generate"
 FULL_CMD+=" --model_path ${MODEL_PATH[$DATASET]}"
 FULL_CMD+=" --num_repetitions 1"
 FULL_CMD+=" --batch_size 64"
+FULL_CMD+=" --debug 1"
 
 echo "Running: $FULL_CMD"
 echo "---"

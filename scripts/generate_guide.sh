@@ -36,7 +36,7 @@ declare -A MODEL_PATH=(
 
 [[ -z "${MODEL_PATH[$DATASET]}" ]] && { echo "Error: unknown dataset '$DATASET'"; exit 1; }
 
-BASE_CMD="python -m sample.generate_guide --model_path ${MODEL_PATH[$DATASET]} --num_repetitions 1 --batch_size 64"
+BASE_CMD="python -m sample.generate_guide --model_path ${MODEL_PATH[$DATASET]} --num_repetitions 1 --batch_size 64 --debug 1"
 
 # --- Per-dataset, per-mode parameters ---
 # Format: "df_delta df_weight df_divider df_upstop"

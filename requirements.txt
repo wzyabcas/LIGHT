@@ -1,8 +1,8 @@
-numpy
 dataclasses
 matplotlib
 spacy
 PyYAML
+omegaconf
 click
 tqdm
 blobfile
@@ -22,13 +22,18 @@ boto3
 torchgeometry
 rtree
 protobuf
+pytorch-lightning
 open3d
 setuptools
 pyopengl
 scikit-image
 dotmap
+einops
 accelerate
 transformers
+numpy==1.23.5
+wandb
+git+https://github.com/openai/CLIP.git
 
 human-body-prior
 git+https://github.com/hassony2/chumpy.git

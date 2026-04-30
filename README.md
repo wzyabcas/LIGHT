@@ -142,7 +142,7 @@ To inference with trained models, execute the following steps
     ```
 
     </details>
-  `DATASET` is from `[omomo, behave, interact]`. `GUIDANCE_MODE` ranges from 0 to 5, corresponding to the following $(m_1, m_2)$ combinations in the paper:
+    `DATASET` is from `[omomo, behave, interact]`. `GUIDANCE_MODE` ranges from 0 to 5, corresponding to the following $(m_1, m_2)$ combinations in the paper:
 
   | GUIDANCE_MODE | $m_1$  | $m_2$  |
   |---------------|-----|-----|
@@ -167,10 +167,10 @@ To evaluate with trained models, execute the following steps
   - Evaluate with our guidance:
 
     ```
-    bash ./scripts/eval_guide.sh --dataset DATASET --mode GUIDANCE_MODE
+    bash ./scripts/eval_wguide.sh --dataset DATASET --mode GUIDANCE_MODE
     ```
     </details>
-  `DATASET` is from `[omomo, behave, interact]`. `GUIDANCE_MODE` ranges from 0 to 5, corresponding to the following $(m_1, m_2)$ combinations in the paper:
+    `DATASET` is from `[omomo, behave, interact]`. `GUIDANCE_MODE` ranges from 0 to 5, corresponding to the following $(m_1, m_2)$ combinations in the paper:
 
   | GUIDANCE_MODE | $m_1$  | $m_2$  |
   |---------------|-----|-----|

@@ -555,7 +555,7 @@ if __name__ == '__main__':
     obj_base_path = './InterAct'
     obj_v_dict={}
     # ['behave_correct','chairs','grab','imhd','intercap_correct','neuraldome','omomo_correct','chairs']:
-    for datasets in ['behave','chairs','grab','imhd','intercap','neuraldome','omomo']:
+    for datasets in ['behave','chairs','grab','imhd','neuraldome','omomo']:
         dataset_obj_path = os.path.join(obj_base_path,datasets,'objects')
         obj_v_dict[datasets]={}
         for obj_name in os.listdir(dataset_obj_path):

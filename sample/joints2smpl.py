@@ -812,12 +812,21 @@ class SmplhOptmize10_handjoints(nn.Module):
 
 
 class SmplhOptmize10_fulljoints(nn.Module):
-    def __init__(self, gender, batch_size, frame_times,extra=[],joint_nums=52):
+    def __init__(self, gender, batch_size, frame_times,extra=[],joint_nums=52,
+                 autoregressive=True, fix_betas_after_first=True,
+                 pose_preserve_weight=5.0, show_progress=True):
         device=torch.device('cuda:0')
         super(SmplhOptmize10_fulljoints, self).__init__()
         self.extra=[]
         self.joint_nums = joint_nums
         self.smpl_model = smplh10[gender]
+        self.batch_size = batch_size
+        self.total_frame_times = frame_times
+        self.autoregressive = autoregressive
+        self.fix_betas_after_first = fix_betas_after_first
+        self.pose_preserve_weight = pose_preserve_weight
+        self.show_progress = show_progress
+        self.device = device
         self.pred_pose = Variable(torch.tensor(np.zeros((batch_size*frame_times, 63))).float().to(device),requires_grad=True)
         self.glo_pose = Variable(torch.tensor(np.zeros((batch_size*frame_times, 3))).float().to(device),requires_grad=True)
 
@@ -840,6 +849,43 @@ class SmplhOptmize10_fulljoints(nn.Module):
         self.frame_times = frame_times
         self.hand_prior=HandPrior(prior_path='./assets',device=device)
         self.prior=Prior()
+
+    def _progress(self, iterable, desc=None, leave=False):
+        if self.show_progress:
+            return tqdm(iterable, desc=desc, leave=leave)
+        return iterable
+
+    def _as_frame_param(self, value, shape, requires_grad=True):
+        if value is None:
+            value = torch.zeros(shape, device=self.device).float()
+        else:
+            value = value.detach().clone().reshape(shape).float().to(self.device)
+        return Variable(value, requires_grad=requires_grad)
+
+    def _reset_frame_parameters(self, state=None, optimize_betas=True):
+        self.frame_times = 1
+        if state is None:
+            state = {}
+
+        self.pred_pose = self._as_frame_param(state.get('pred_pose'), (1, 63), True)
+        self.glo_pose = self._as_frame_param(state.get('glo_pose'), (1, 3), True)
+        self.pred_betas = self._as_frame_param(state.get('pred_betas'), (1, 10), optimize_betas)
+        self.pred_trans = self._as_frame_param(state.get('pred_trans'), (1, 3), True)
+        self.left_hand_pose = self._as_frame_param(state.get('left_hand_pose'), (1, 45), True)
+        self.right_hand_pose = self._as_frame_param(state.get('right_hand_pose'), (1, 45), True)
+
+        self.left_hand_pose_mean =torch.from_numpy(self.mano_mean[:45]).unsqueeze(0).float().clone().to(self.device)
+        self.right_hand_pose_mean =torch.from_numpy(self.mano_mean[45:]).unsqueeze(0).float().clone().to(self.device)
+
+    def _current_state(self):
+        return {
+            'pred_pose': self.pred_pose.detach().clone(),
+            'glo_pose': self.glo_pose.detach().clone(),
+            'pred_betas': self.pred_betas.detach().clone(),
+            'pred_trans': self.pred_trans.detach().clone(),
+            'left_hand_pose': self.left_hand_pose.detach().clone(),
+            'right_hand_pose': self.right_hand_pose.detach().clone(),
+        }
 
     def init_guess(self, markers):
         with torch.no_grad():
@@ -875,16 +921,13 @@ class SmplhOptmize10_fulljoints(nn.Module):
     def optimize_cam(self,markers_gt):
         cam_t_optimizer = torch.optim.LBFGS([self.pred_trans,self.glo_pose], max_iter=100,
                                             lr=1e-2, line_search_fn='strong_wolfe')
-        for i in tqdm(range(10)):
+        for i in self._progress(range(10), desc='cam', leave=False):
             def closure():
                 cam_t_optimizer.zero_grad()
                 verts,joints=self.forward_human()
-                # insert
-                # if self.joint_nums ==52:
-                #     pred_markers = joints[:,self.djoints_index] 
-                # else:
-                pred_markers = joints[:,:self.joint_nums] 
-                loss1=100*(torch.sum((pred_markers-markers_gt)**2))
+                torso_index = [1, 2, 16, 17]
+                pred_markers = joints[:,torso_index]
+                loss1=100*(torch.sum((pred_markers-markers_gt[:,torso_index])**2))
                 # loss2=5*self.smooth()
                 loss=loss1#+loss2
                 loss.backward()
@@ -893,11 +936,18 @@ class SmplhOptmize10_fulljoints(nn.Module):
             
     def beta_restrict(self):
         return torch.sum(self.pred_betas**2)
-    def optimize_whole(self,markers_gt):
-        body_optimizer = torch.optim.LBFGS([self.pred_trans,self.pred_pose,self.glo_pose,self.pred_betas,self.left_hand_pose,self.right_hand_pose], max_iter=100,
+    def optimize_whole(self,markers_gt,optimize_betas=True,preserve_state=None):
+        body_opt_params = [self.pred_trans,self.pred_pose,self.glo_pose,self.left_hand_pose,self.right_hand_pose]
+        if optimize_betas:
+            self.pred_betas.requires_grad_(True)
+            body_opt_params.insert(3, self.pred_betas)
+        else:
+            self.pred_betas.requires_grad_(False)
+
+        body_optimizer = torch.optim.LBFGS(body_opt_params, max_iter=100,
                                             lr=1e-2, line_search_fn='strong_wolfe')
         
-        for i in tqdm(range(100)):
+        for i in self._progress(range(100), desc='body', leave=False):
             def closure():
                 body_optimizer.zero_grad()
                 verts,joints=self.forward_human()
@@ -909,13 +959,22 @@ class SmplhOptmize10_fulljoints(nn.Module):
                 loss4=5*self.beta_restrict()
                 loss5=torch.sum(self.hand_prior(self.left_hand_pose+self.left_hand_pose_mean,left_or_right=0)**2+self.hand_prior(self.right_hand_pose+self.right_hand_pose_mean,left_or_right=1)**2)+\
                         self.prior.forward(self.pred_pose)+torch.sum(self.pred_pose**2)+torch.sum(self.glo_pose**2)
+                if preserve_state is None:
+                    loss6 = 0.0
+                else:
+                    loss6 = (self.pose_preserve_weight ** 2) * (
+                        torch.sum((self.pred_pose - preserve_state['pred_pose'])**2) +
+                        torch.sum((self.glo_pose - preserve_state['glo_pose'])**2) +
+                        torch.sum((self.left_hand_pose - preserve_state['left_hand_pose'])**2) +
+                        torch.sum((self.right_hand_pose - preserve_state['right_hand_pose'])**2)
+                    )
                 # +loss5
-                loss=loss1+loss4+loss5
+                loss=loss1+loss4+loss5+loss6
                 loss.backward()
                 return loss
 
             body_optimizer.step(closure)
-    def optimize_hand(self,markers_gt):
+    def optimize_hand(self,markers_gt,num_iters=1000):
         indexes = list(range(19*3,21*3))
         arm_param = Variable(self.pred_pose[:, indexes].detach(),requires_grad=True)
 
@@ -924,16 +983,20 @@ class SmplhOptmize10_fulljoints(nn.Module):
                             {'params': self.left_hand_pose,    'lr': 1e-1},
                             {'params': self.right_hand_pose,   'lr': 1e-1},
                         ])
-        arm_clone = self.pred_pose[:,indexes].clone()
-        lhand_clone = self.left_hand_pose.clone()
-        rhand_clone = self.right_hand_pose.clone()
-        self.pred_pose = self.pred_pose.detach().clone()
+        base_pose = self.pred_pose.detach().clone()
+        arm_clone = base_pose[:,indexes].clone()
 
-        for i in tqdm(range(1000)):
+        for i in self._progress(range(num_iters), desc='hand', leave=False):
             body_optimizer.zero_grad()
-            # self.pred_pose = self.pred_pose.detach().clone()
-            self.pred_pose[:, indexes] = arm_param
-            verts,joints=self.forward_human()
+            pred_pose = base_pose.clone()
+            pred_pose[:, indexes] = arm_param
+            smpl_output = self.smpl_model(body_pose=pred_pose,
+                global_orient=self.glo_pose.detach(),
+                left_hand_pose=self.left_hand_pose,
+                right_hand_pose=self.right_hand_pose,
+                betas=self.pred_betas[:,None].repeat(1,self.frame_times,1).reshape(-1,10).detach(),
+                transl=self.pred_trans.detach(),)
+            joints = smpl_output.joints
             # if self.joint_nums == 52:
                 
             #     pred_markers = joints[:,self.djoints_index]
@@ -948,9 +1011,11 @@ class SmplhOptmize10_fulljoints(nn.Module):
             loss5= 0.1*torch.sum((arm_param-arm_clone)**2)+ 0.01*torch.sum(self.hand_prior(self.left_hand_pose+self.left_hand_pose_mean,left_or_right=0)**2+self.hand_prior(self.right_hand_pose+self.right_hand_pose_mean,left_or_right=1)**2)
             # +loss5
             loss=loss1+loss5
-            loss.backward(retain_graph=True)
+            loss.backward()
             body_optimizer.step()
         with torch.no_grad():
+            self.pred_pose = base_pose.clone()
+            self.pred_pose[:, indexes] = arm_param.detach()
             verts,joints=self.forward_human()
             return verts.detach(), self.smpl_model.faces.astype(np.int32),torch.cat([self.glo_pose,self.pred_pose,self.left_hand_pose,self.right_hand_pose],-1).detach().cpu().numpy(),self.pred_betas.detach().cpu().numpy(),self.pred_trans.detach().cpu().numpy()
         # with torch.no_grad():
@@ -960,11 +1025,56 @@ class SmplhOptmize10_fulljoints(nn.Module):
         
         
 
-    def forward(self,markers_gt):
+    def _forward_single_frame(self, markers_gt, frame_idx=0, previous_state=None):
+        optimize_betas = frame_idx == 0 or not self.fix_betas_after_first
+        self._reset_frame_parameters(previous_state, optimize_betas=optimize_betas)
+        preserve_state = None
+        if previous_state is not None:
+            preserve_state = {
+                key: value.detach().clone().reshape(1, -1).float().to(self.device)
+                for key, value in previous_state.items()
+                if key in ['pred_pose', 'glo_pose', 'left_hand_pose', 'right_hand_pose']
+            }
+
         self.init_guess(markers_gt)
         self.optimize_cam(markers_gt)
-        self.optimize_whole(markers_gt)
+        self.optimize_whole(markers_gt, optimize_betas=optimize_betas, preserve_state=preserve_state)
+        hand_iters = 1000 if frame_idx == 0 else 100
+        verts, faces, poses, betas, trans = self.optimize_hand(markers_gt, num_iters=hand_iters)
+        return verts, faces, poses, betas, trans, self._current_state()
+
+    def forward_autoregressive(self, markers_gt):
+        frame_num = markers_gt.shape[0]
+        all_verts = []
+        all_poses = []
+        all_trans = []
+        previous_state = None
+        faces = None
+        betas = None
+
+        for frame_idx in self._progress(range(frame_num), desc='smplh ik', leave=True):
+            markers_frame = markers_gt[frame_idx:frame_idx+1]
+            verts, faces, poses, betas, trans, previous_state = self._forward_single_frame(
+                markers_frame, frame_idx=frame_idx, previous_state=previous_state)
+            all_verts.append(verts)
+            all_poses.append(poses)
+            all_trans.append(trans)
+
+        verts = torch.cat(all_verts, dim=0)
+        poses = np.concatenate(all_poses, axis=0)
+        trans = np.concatenate(all_trans, axis=0)
+        return verts.detach(), faces, poses, betas, trans
+
+    def forward_parallel(self,markers_gt):
+        self.init_guess(markers_gt)
+        self.optimize_cam(markers_gt)
+        self.optimize_whole(markers_gt, optimize_betas=True)
         return self.optimize_hand(markers_gt)
+
+    def forward(self,markers_gt):
+        if self.autoregressive and markers_gt.shape[0] > 1:
+            return self.forward_autoregressive(markers_gt)
+        return self.forward_parallel(markers_gt)
 
 
 
@@ -1377,4 +1487,3 @@ class SmplhOptmize10_fulljoints2(nn.Module):
         self.init_guess(markers_gt)
         self.optimize_cam(markers_gt)
         return self.optimize_whole(markers_gt)
-

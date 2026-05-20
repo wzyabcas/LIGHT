@@ -119,7 +119,7 @@ def main(args=None):
     if args is None:
         # args is None unless this method is called from another function (e.g. during training)
         args = generate_args()
-    args.guidance_param = 1.5 
+    
     device = torch.device('cuda:0')
     fixseed(args.seed)
     out_path = args.output_dir
@@ -356,7 +356,7 @@ def main(args=None):
                 for i in range(use_gt):
                     # if i==1: 
                     #     continue
-                    
+                    length = 10
                     if i==0:
                         motion = all_motions[rep_i*args.batch_size + sample_i][:length]
                     else:

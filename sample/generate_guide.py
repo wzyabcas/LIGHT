@@ -42,7 +42,7 @@ def rigid_align_batch(P: torch.Tensor,
     assert P.ndim == 2 and P.shape[1] == 3
     assert V.ndim == 3 and V.shape[2] == 3 and V.shape[1] == P.shape[0]
 
-    device = P.device                                # CPU/GPU
+    device = P.device                                # PU
     N         = P.shape[0]
     # P_center = P_mean
     # 1) 去中心化
@@ -52,12 +52,16 @@ def rigid_align_batch(P: torch.Tensor,
     V_mean    = V.mean(dim=1)                        # (T,3)
     V_center  = V - V_mean[:, None, :]               # (T,N,3)
 
-    
+    # 2) 计算批量协方差 H_t = P_c^T V_c
+    #    einsum 语义: (ni)*(t,nj) -> (t,ij)
     H = torch.einsum('ni,tnj->tij', P_center, V_center)  # (T,3,3)
 
+    # 3) SVD 分解
     U, S, Vh = torch.linalg.svd(H)                   # SVD; Vh = V^T
 
+    # 4) 处理镜像反射：保证 det(R)=+1
     det_R = torch.det(Vh.transpose(-2, -1) @ U.transpose(-2, -1))  # (T,)
+    # 构造对角矩阵 D，最后一维根据 det 调整符号
     D = torch.diag_embed(
             torch.stack([
                 torch.ones_like(det_R),
@@ -66,8 +70,10 @@ def rigid_align_batch(P: torch.Tensor,
             ], dim=-1)
         )                                            # (T,3,3)
 
+    # 5) 得到最终旋转 R = Vh^T D U^T
     R = Vh.transpose(-2, -1) @ D @ U.transpose(-2, -1)  # (T,3,3)
 
+    # 6) 平移 t = v_mean - R * p_mean
     t = V_mean - (R @ P_mean)                        # (T,3)
 
     return R, t
@@ -113,7 +119,7 @@ def main(args=None):
     if args is None:
         # args is None unless this method is called from another function (e.g. during training)
         args = generate_args()
-    args.guidance_param = 1.5 
+    
     device = torch.device('cuda:0')
     fixseed(args.seed)
     out_path = args.output_dir
@@ -255,7 +261,7 @@ def main(args=None):
                 batch1= batch_rand
                 batch2 = batch_rand
                 batch3 = None
-            sample = diffusion.sample_step(model, batch1,batch2, batch3,0, model_kwargs['y'],scheduling_mode='full_sequence') # scheduling_mode 
+            sample = diffusion.sample_step_new_cfg(model, batch1,batch2, batch3,0, model_kwargs['y'],scheduling_mode='full_sequence') # scheduling_mode 
             # sample = input_motion
             print(sample.shape,'OUTPUT_SAMPLE')
          
@@ -350,7 +356,7 @@ def main(args=None):
                 for i in range(use_gt):
                     # if i==1: 
                     #     continue
-                    
+                    length = 10
                     if i==0:
                         motion = all_motions[rep_i*args.batch_size + sample_i][:length]
                     else:

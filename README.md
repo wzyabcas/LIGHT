@@ -108,7 +108,7 @@
       └── id
         ├── data.npz
     ```
-    Due to the license constraint, please process BEHAVE and GRAB from scratch to our representation following the [instructions](https://github.com/wzyabcas/InterAct/blob/main/README.md#light_representation) in InterAct.
+    Due to the license constraint, please process BEHAVE and GRAB from scratch to our representation following the [instructions](https://github.com/wzyabcas/InterAct/blob/main/README.md#light_representation).
 
 4. Download pretrained checkpoints
 

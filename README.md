@@ -33,15 +33,11 @@
 - [2026-04-22] Release the evaluation pipeline.
 - [2026-04-22] Release the evaluator and pretrained model checkpoints
 
-
-
-
-
 ## TODO
 - [X] Release the checkpoints on all datasets
 - [X] Release the evaluation pipeline
 - [X] Release the training pipeline
-- [ ] Release the data processing code for GRAB and BEHAVE
+- [X] Release the data processing code for GRAB and BEHAVE
 - [ ] Release the augmentated data
 
 
@@ -112,6 +108,8 @@
       └── id
         ├── data.npz
     ```
+    Due to the license constraint, please process BEHAVE and GRAB from scratch to our representation following the [instructions](https://github.com/wzyabcas/InterAct/blob/main/README.md#light_representation) in InterAct.
+
 4. Download pretrained checkpoints
 
 
